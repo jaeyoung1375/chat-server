@@ -11,6 +11,7 @@ import kr.co.chat.auth.mapper.AuthMapper;
 import kr.co.chat.auth.util.JwtTokenUtil;
 import kr.co.chat.common.code.UserErrorCode;
 import kr.co.chat.common.exception.CustomException;
+import kr.co.chat.common.util.DateUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -55,7 +56,8 @@ public class AuthService {
                 authMapper.insertSocialAccount(
                         existedUser.getUserId(),
                         socialAccount.getProvider(),
-                        socialAccount.getProviderUserId()
+                        socialAccount.getProviderUserId(),
+                        DateUtil.now()
                 );
 
                 return issueToken(existedUser.getUserId(), existedUser.getRole(), false);
@@ -65,15 +67,17 @@ public class AuthService {
                         .builder()
                         .name(name)
                         .email(email)
-                        .passwordHash(null)
                         .status("ACTIVE")
                         .role(Role.USER)
+                        .regDt(DateUtil.now())
+                        .modDt(DateUtil.now())
                         .build();
                 authMapper.insertUser(userInsertDto);
                 authMapper.insertSocialAccount(
                         userInsertDto.getUserId(),
                         socialAccount.getProvider(),
-                        socialAccount.getProviderUserId());
+                        socialAccount.getProviderUserId(),
+                        DateUtil.now());
 
                 return issueToken(userInsertDto.getUserId(), Role.USER, true);
             }
@@ -81,7 +85,7 @@ public class AuthService {
     }
 
     private UserResponseDto issueToken(Long userId, Role role, boolean isNew){
-        authMapper.updateLastLoginDt(userId);
+        authMapper.updateLastLoginDt(userId, DateUtil.now());
 
         String accessToken = jwtTokenUtil.createAccessToken(userId, role.name());
         String refreshToken = jwtTokenUtil.createRefreshToken(userId);

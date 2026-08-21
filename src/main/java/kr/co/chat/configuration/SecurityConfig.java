@@ -1,7 +1,6 @@
 package kr.co.chat.configuration;
 
 import kr.co.chat.auth.GithubEmailOAuth2UserService;
-import kr.co.chat.auth.MobileAwareOAuth2AuthorizationRequestResolver;
 import kr.co.chat.auth.SocialOauth2SuccessHandler;
 import kr.co.chat.auth.filter.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
@@ -40,11 +39,6 @@ public class SecurityConfig {
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(oauth -> oauth
-                        .authorizationEndpoint(auth -> auth
-                                .authorizationRequestResolver(
-                                        mobileAwareAuthorizationRequestResolver(clientRegistrationRepository)
-                                )
-                        )
                         .successHandler(socialOauth2SuccessHandler)
                         .userInfoEndpoint(userInfo -> userInfo.userService(githubEmailOAuth2UserService))
                 );
@@ -52,14 +46,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-    /**
-     * 모바일 앱(?platform=mobile) 요청을 세션에 마킹해서 SocialOauth2SuccessHandler가 리다이렉트 방식을 분기하게 한다.
-     */
-    @Bean
-    public OAuth2AuthorizationRequestResolver mobileAwareAuthorizationRequestResolver(
-            ClientRegistrationRepository repo) {
-        return new MobileAwareOAuth2AuthorizationRequestResolver(authorizationRequestResolver(repo));
-    }
 
     /**
      * 카카오는 PKCE 미지원 → code_challenge/code_challenge_method 파라미터 제거

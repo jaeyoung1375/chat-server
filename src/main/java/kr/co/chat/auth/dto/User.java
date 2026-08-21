@@ -17,9 +17,6 @@ public class User {
     @Schema(description = "이메일")
     private String email;
 
-    @Schema(description = "비밀번호 해시")
-    private String passwordHash;
-
     @Schema(description = "계정상태 (ACTIVE, DEACTIVATE)")
     private String status;
 

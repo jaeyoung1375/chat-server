@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.chat.room.mapper.RoomMapper">
+
+    <insert id="insertRoom" parameterType="RoomDto">
+        <selectKey keyProperty="roomId" resultType="long" order="BEFORE">
+            SELECT CHAT_ROOM_SEQ.NEXTVAL FROM DUAL
+        </selectKey>
+
+        INSERT INTO CHAT_ROOM (
+            ROOM_ID          /* 채팅방아이디 */
+            , ROOM_TYPE      /* 채팅방유형 (DIRECT, GROUP) */
+            , ROOM_NAME      /* 방이름 (GROUP만 사용) */
+            , DIRECT_KEY     /* DIRECT 방 중복생성 방지 키 */
+            , REG_DT         /* 등록일시 */
+            , MOD_DT         /* 수정일시 */
+        ) VALUES (
+            #{roomId},
+            #{roomType},
+            #{roomName},
+            #{directKey},
+            #{regDt},
+            #{modDt}
+        )
+    </insert>
+
+    <insert id="insertMember">
+        INSERT INTO CHAT_ROOM_MEMBER (
+            ROOM_MEMBER_ID     /* 참여자아이디 */
+            , ROOM_ID          /* 채팅방아이디 */
+            , USER_ID          /* 회원아이디 */
+            , JOINED_AT        /* 입장일시 */
+        ) VALUES (
+            CHAT_ROOM_MEMBER_SEQ.NEXTVAL,
+            #{roomId},
+            #{userId},
+            #{joinedAt}
+        )
+    </insert>
+
+    <select id="findById" resultType="RoomDto">
+        SELECT
+            ROOM_ID
+            , ROOM_TYPE
+            , ROOM_NAME
+            , DIRECT_KEY
+            , LAST_MESSAGE_AT
+            , REG_DT
+            , MOD_DT
+        FROM CHAT_ROOM
+        WHERE ROOM_ID = #{roomId}
+    </select>
+
+    <select id="findByDirectKey" resultType="RoomDto">
+        SELECT
+            ROOM_ID
+            , ROOM_TYPE
+            , ROOM_NAME
+            , DIRECT_KEY
+            , LAST_MESSAGE_AT
+            , REG_DT
+            , MOD_DT
+        FROM CHAT_ROOM
+        WHERE DIRECT_KEY = #{directKey}
+    </select>
+
+    <!-- 내가 참여 중인 채팅방 목록: 표시이름(DIRECT는 상대방, GROUP은 방이름) + 마지막 메시지 미리보기 + 안읽음 수 -->
+    <select id="findRoomsByUserId" resultType="RoomListItemDto">
+        SELECT
+            r.ROOM_ID                                                              AS roomId,
+            r.ROOM_TYPE                                                            AS roomType,
+            CASE WHEN r.ROOM_TYPE = 'DIRECT'
+                 THEN (SELECT NVL(u.NICKNAME, u.NAME)
+                         FROM CHAT_ROOM_MEMBER m2
+                         JOIN USERS u ON u.USER_ID = m2.USER_ID
+                        WHERE m2.ROOM_ID = r.ROOM_ID
+                          AND m2.USER_ID != #{userId})
+                 ELSE r.ROOM_NAME
+            END                                                                    AS displayName,
+            r.LAST_MESSAGE_AT                                                      AS lastMessageAt,
+            (SELECT cm.CONTENT
+               FROM CHAT_MESSAGE cm
+              WHERE cm.MESSAGE_ID = (SELECT MAX(MESSAGE_ID)
+                                        FROM CHAT_MESSAGE
+                                       WHERE ROOM_ID = r.ROOM_ID
+                                         AND DELETED_YN = 'N'))                     AS lastMessageContent,
+            (SELECT COUNT(*)
+               FROM CHAT_MESSAGE cm
+              WHERE cm.ROOM_ID = r.ROOM_ID
+                AND cm.DELETED_YN = 'N'
+                AND cm.MESSAGE_ID > NVL(rm.LAST_READ_MESSAGE_ID, 0))                AS unreadCount
+        FROM CHAT_ROOM r
+        JOIN CHAT_ROOM_MEMBER rm ON rm.ROOM_ID = r.ROOM_ID
+        WHERE rm.USER_ID = #{userId}
+          AND rm.LEFT_AT IS NULL
+        ORDER BY r.LAST_MESSAGE_AT DESC NULLS LAST, r.ROOM_ID DESC
+    </select>
+
+    <select id="findMembers" resultType="RoomMemberDto">
+        SELECT
+            m.USER_ID                AS userId,
+            NVL(u.NICKNAME, u.NAME)  AS displayName,
+            m.JOINED_AT              AS joinedAt
+        FROM CHAT_ROOM_MEMBER m
+        JOIN USERS u ON u.USER_ID = m.USER_ID
+        WHERE m.ROOM_ID = #{roomId}
+          AND m.LEFT_AT IS NULL
+        ORDER BY m.JOINED_AT
+    </select>
+
+    <select id="countActiveMember" resultType="int">
+        SELECT COUNT(*)
+        FROM CHAT_ROOM_MEMBER
+        WHERE ROOM_ID = #{roomId}
+          AND USER_ID = #{userId}
+          AND LEFT_AT IS NULL
+    </select>
+
+    <update id="updateLeftAt">
+        UPDATE CHAT_ROOM_MEMBER
+        SET LEFT_AT = #{leftAt}
+        WHERE ROOM_ID = #{roomId}
+          AND USER_ID = #{userId}
+          AND LEFT_AT IS NULL
+    </update>
+
+    <update id="updateLastReadMessageId">
+        UPDATE CHAT_ROOM_MEMBER
+        SET LAST_READ_MESSAGE_ID = GREATEST(NVL(LAST_READ_MESSAGE_ID, 0), #{messageId, jdbcType=NUMERIC})
+        WHERE ROOM_ID = #{roomId}
+          AND USER_ID = #{userId}
+    </update>
+
+    <update id="updateLastMessageAt">
+        UPDATE CHAT_ROOM
+        SET LAST_MESSAGE_AT = #{now},
+            MOD_DT = #{now}
+        WHERE ROOM_ID = #{roomId}
+    </update>
+
+</mapper>

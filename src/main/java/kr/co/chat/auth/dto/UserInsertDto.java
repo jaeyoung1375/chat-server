@@ -19,9 +19,6 @@ public class UserInsertDto {
     @Schema(description = "이메일")
     private String email;
 
-    @Schema(description = "비밀번호 해시 (소셜 전용 가입자는 null)")
-    private String passwordHash;
-
     @Schema(description = "계정상태 (ACTIVE, DEACTIVATE)")
     private String status;
 

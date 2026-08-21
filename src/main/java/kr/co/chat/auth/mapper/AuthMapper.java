@@ -7,6 +7,8 @@ import kr.co.chat.auth.enums.Provider;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.time.LocalDateTime;
+
 @Mapper
 public interface AuthMapper {
 
@@ -37,12 +39,13 @@ public interface AuthMapper {
      */
     void insertSocialAccount(@Param("userId") Long userId,
                              @Param("provider") Provider provider,
-                             @Param("providerUserId") String providerUserId);
+                             @Param("providerUserId") String providerUserId,
+                             @Param("regDt") LocalDateTime regDt);
 
     /**
      * 최근 로그인 일시 갱신
      */
-    void updateLastLoginDt(Long userId);
+    void updateLastLoginDt(@Param("userId") Long userId, @Param("lastLoginDt") LocalDateTime lastLoginDt);
 
     /**
      * 닉네임, 성별, 생년월일 갱신 (운동프로필 등록 시 사용)
@@ -50,11 +53,13 @@ public interface AuthMapper {
     void updateProfileInfo(@Param("userId") Long userId,
                            @Param("nickname") String nickname,
                            @Param("gender") String gender,
-                           @Param("birth") String birth);
+                           @Param("birth") String birth,
+                           @Param("modDt") LocalDateTime modDt);
 
     /**
      * 프로필 파일아이디 갱신 (운동프로필 등록/수정 시 이미지 첨부한 경우 사용)
      */
     void updateProfileFileId(@Param("userId") Long userId,
-                             @Param("profileFileId") Long profileFileId);
+                             @Param("profileFileId") Long profileFileId,
+                             @Param("modDt") LocalDateTime modDt);
 }

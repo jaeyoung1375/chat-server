@@ -28,15 +28,6 @@ public class SocialAccount {
     @Schema(description = "등록일시")
     private LocalDateTime regDt;
 
-    @Schema(description = "변경일시")
-    private LocalDateTime modDt;
 
-    @Schema(description = "프로필파일아이디")
-    private Long profileFileId;
 
-    @Schema(description = "제공자 액세스토큰(암호화)")
-    private String providerAccessToken;
-
-    @Schema(description = "제공자 액세스토큰 만료일시")
-    private LocalDateTime expiresAt;
 }

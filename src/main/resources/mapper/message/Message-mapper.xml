@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.chat.message.mapper.MessageMapper">
+
+    <insert id="insertMessage" parameterType="MessageDto">
+        <selectKey keyProperty="messageId" resultType="long" order="BEFORE">
+            SELECT CHAT_MESSAGE_SEQ.NEXTVAL FROM DUAL
+        </selectKey>
+
+        INSERT INTO CHAT_MESSAGE (
+            MESSAGE_ID        /* 메시지아이디 */
+            , ROOM_ID         /* 채팅방아이디 */
+            , SENDER_ID       /* 보낸사람 회원아이디 */
+            , MESSAGE_TYPE    /* 메시지유형 (TEXT, IMAGE, SYSTEM) */
+            , CONTENT         /* 내용 */
+            , FILE_ID         /* 첨부파일아이디 */
+            , SENT_AT         /* 발송일시 */
+        ) VALUES (
+            #{messageId},
+            #{roomId},
+            #{senderId, jdbcType=NUMERIC},
+            #{messageType},
+            #{content},
+            #{fileId, jdbcType=NUMERIC},
+            #{sentAt}
+        )
+    </insert>
+
+    <select id="findById" resultType="MessageDto">
+        SELECT
+            MESSAGE_ID
+            , ROOM_ID
+            , SENDER_ID
+            , MESSAGE_TYPE
+            , CONTENT
+            , FILE_ID
+            , SENT_AT
+            , DELETED_YN
+        FROM CHAT_MESSAGE
+        WHERE MESSAGE_ID = #{messageId}
+    </select>
+
+    <select id="findMessages" resultType="MessageResponseDto">
+        SELECT
+            cm.MESSAGE_ID               AS messageId,
+            cm.ROOM_ID                  AS roomId,
+            cm.SENDER_ID                AS senderId,
+            NVL(u.NICKNAME, u.NAME)     AS senderName,
+            cm.MESSAGE_TYPE             AS messageType,
+            cm.CONTENT                  AS content,
+            cm.FILE_ID                  AS fileId,
+            cm.SENT_AT                  AS sentAt
+        FROM CHAT_MESSAGE cm
+        LEFT JOIN USERS u ON u.USER_ID = cm.SENDER_ID
+        WHERE cm.ROOM_ID = #{roomId}
+          AND cm.DELETED_YN = 'N'
+          <if test="beforeMessageId != null">
+          AND cm.MESSAGE_ID &lt; #{beforeMessageId}
+          </if>
+        ORDER BY cm.MESSAGE_ID ASC
+        FETCH FIRST #{size} ROWS ONLY
+    </select>
+
+</mapper>

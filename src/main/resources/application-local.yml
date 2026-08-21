@@ -15,7 +15,7 @@ spring:
      max-request-size: 20MB
 
 server:
-  port: 9091
+  port: 9090
 
 decorator:
   datasource:
