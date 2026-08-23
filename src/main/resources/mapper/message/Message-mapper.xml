@@ -60,7 +60,7 @@
           <if test="beforeMessageId != null">
           AND cm.MESSAGE_ID &lt; #{beforeMessageId}
           </if>
-        ORDER BY cm.MESSAGE_ID ASC
+        ORDER BY cm.MESSAGE_ID DESC
         FETCH FIRST #{size} ROWS ONLY
     </select>
 
