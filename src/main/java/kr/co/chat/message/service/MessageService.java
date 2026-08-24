@@ -1,5 +1,6 @@
 package kr.co.chat.message.service;
 
+import kr.co.chat.common.file.service.FileService;
 import kr.co.chat.common.util.DateUtil;
 import kr.co.chat.message.dto.MessageDto;
 import kr.co.chat.message.dto.MessageResponseDto;
@@ -11,7 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.io.IOException;
 import java.util.List;
 
 @Slf4j
@@ -23,13 +24,23 @@ public class MessageService {
 
     private final RoomService roomService;
 
+    private final FileService fileService;
+
     public List<MessageResponseDto> getMessages(Long userId, Long roomId, Long beforeMessageId, int size) {
         roomService.validateMembership(roomId, userId);
-        return messageMapper.findMessages(roomId, beforeMessageId, size);
+
+        List<MessageResponseDto> response = messageMapper.findMessages(roomId, beforeMessageId, size);
+
+        response.forEach(message -> {
+            if(message.getFileId() != null){
+                message.setRealFilePath(fileService.getUploadPath(message.getFileId()));
+            }
+        });
+        return response;
     }
 
     @Transactional
-    public MessageResponseDto sendMessage(Long userId, Long roomId, MessageSendRequestDto request) {
+    public MessageResponseDto sendMessage(Long userId, Long roomId,  MessageSendRequestDto request) throws IOException {
 
         roomService.validateMembership(roomId, userId);
 
@@ -55,6 +66,7 @@ public class MessageService {
                 .content(saved.getContent())
                 .fileId(saved.getFileId())
                 .sentAt(saved.getSentAt())
+                .realFilePath(fileService.getUploadPath(saved.getFileId()))
                 .build();
     }
 }

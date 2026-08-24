@@ -10,14 +10,7 @@ import kr.co.chat.message.dto.MessageSendRequestDto;
 import kr.co.chat.message.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @Slf4j
@@ -36,6 +29,7 @@ public class MessageController {
             @RequestParam(required = false) Long beforeMessageId,
             @RequestParam(defaultValue = "30") int size) {
         Long userId = SecurityUtil.getUserId();
+
         return ApiResponse.ok(messageService.getMessages(userId, roomId, beforeMessageId, size));
     }
 
@@ -43,7 +37,7 @@ public class MessageController {
     @PostMapping
     public ApiResponse<MessageResponseDto> sendMessage(
             @PathVariable Long roomId,
-            @Valid @RequestBody MessageSendRequestDto request) {
+            @Valid @RequestBody MessageSendRequestDto request) throws Exception {
         Long userId = SecurityUtil.getUserId();
         return ApiResponse.ok(messageService.sendMessage(userId, roomId, request));
     }

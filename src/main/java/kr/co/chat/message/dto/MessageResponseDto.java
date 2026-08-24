@@ -39,4 +39,7 @@ public class MessageResponseDto {
 
     @Schema(description = "발송일시")
     private LocalDateTime sentAt;
+
+    @Schema(description = "실제파일경로")
+    private String realFilePath;
 }

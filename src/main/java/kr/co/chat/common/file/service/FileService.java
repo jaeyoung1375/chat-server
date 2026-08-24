@@ -6,9 +6,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 
+import kr.co.chat.common.file.dto.FileResponseDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,7 +33,7 @@ public class FileService {
 
 	private final FileMapper fileMapper;
 
-	public String upload(MultipartFile file, String tempKey) throws IOException {
+	public FileResponseDto upload(MultipartFile file) throws IOException {
 
 		if(file.isEmpty()) {
 			throw new CustomException(FileErrorCode.FILE_EMPTY);
@@ -75,16 +75,17 @@ public class FileService {
 				.filePath(dirPath.toString())
 				.fileSize(file.getSize())
 				.fileExt(ext.substring(1))
-				.tempYn("Y")
-				.tempKey(tempKey)
 				.build();
 		fileMapper.insertFile(fileDto);
 
-		Path url =  Paths.get(uploadServer, year, month, day);
-		Path realUrl = url.resolve(saveName);
+//		Path url =  Paths.get(uploadServer, year, month, day);
+//		Path realUrl = url.resolve(saveName);
 
 
-		return realUrl.toString();
+		return FileResponseDto.builder()
+				.fileId(fileDto.getFileId())
+				.orgFileNm(originalName)
+				.build();
 	}
 
 	/**
@@ -134,32 +135,33 @@ public class FileService {
 				.filePath(dirPath.toString())
 				.fileSize(file.getSize())
 				.fileExt(ext.substring(1))
-				.tempYn("N")
 				.build();
 		fileMapper.insertFile(fileDto);
 
 		return fileDto.getFileId();
 	}
 
-	/**
-	 * 임시파일을 제거하는 서비스
-	 * @param file
-	 */
-	public void confirmTempFiles(String tempKey) {
+	public String getUploadPath(Long fileId) {
 
-		if(tempKey == null) return;
+		FileDto file = fileMapper.getFile(fileId);
 
-		fileMapper.confirmTempFiles(tempKey);
+		if(file == null) {
+			throw new CustomException(FileErrorCode.FILE_NOT_FOUND);
+		}
+
+		Path relativePath;
+
+		try{
+			relativePath = Paths.get(uploadPath).relativize(Paths.get(file.getFilePath()));
+		}catch (IllegalArgumentException e){
+			log.error("[getUploadPath] relativize 실패. uploadPath: {}, getFilePath: {}, fileId : {} ", uploadPath, file.getFilePath(), fileId, e);
+			throw new CustomException(FileErrorCode.FILE_PATH_MISMATCH);
+		}
+		
+		// /upload/2026/08/24/파일명.png 형식을 반환한다.
+		return uploadServer + "/" + relativePath.toString().replace("\\","/") + "/" + file.getSaveFileNm();
 
 	}
 
-	/**
-	 * 임시파일 리스트 조회
-	 * @param tempKey
-	 * @return
-	 */
-	public List<FileDto> selectTempFiles(String tempKey){
 
-		return fileMapper.selectTempFiles(tempKey);
-	}
 }

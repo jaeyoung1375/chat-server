@@ -1,17 +1,14 @@
 package kr.co.chat.common.file.mapper;
 
-import java.util.List;
-
 import org.apache.ibatis.annotations.Mapper;
-
 import kr.co.chat.common.file.dto.FileDto;
+
 
 @Mapper
 public interface FileMapper {
 
 	void insertFile(FileDto file);
 
-	void confirmTempFiles(String tempKey);
+	FileDto getFile(Long fileId);
 
-	List<FileDto> selectTempFiles(String tempKey);
 }

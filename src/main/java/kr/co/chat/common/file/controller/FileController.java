@@ -2,6 +2,7 @@ package kr.co.chat.common.file.controller;
 
 import java.io.IOException;
 
+import kr.co.chat.common.file.dto.FileResponseDto;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,12 +20,12 @@ public class FileController {
 
 	private final FileService fileService;
 
-	@PostMapping("/file/editor-image")
-	public ApiResponse<String> uploadEditorImage(@RequestPart("file") MultipartFile file, @RequestPart("tempKey") String tempKey) throws IOException{
+	@PostMapping("/file/upload")
+	public ApiResponse<FileResponseDto> fileUpload(@RequestPart("file") MultipartFile file) throws IOException{
 
-		String url = fileService.upload(file, tempKey);
+		FileResponseDto response = fileService.upload(file);
 
-		return ApiResponse.ok(url);
+		return ApiResponse.ok(response);
 	}
 
 }
