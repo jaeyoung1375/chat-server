@@ -81,7 +81,10 @@
                  ELSE r.ROOM_NAME
             END                                                                    AS displayName,
             r.LAST_MESSAGE_AT                                                      AS lastMessageAt,
-            (SELECT cm.CONTENT
+            (SELECT
+                    CASE WHEN cm.FILE_ID IS NOT NULL THEN '파일을 보냈습니다'
+            			 WHEN cm.CONTENT IS NOT NULL THEN cm.CONTENT
+            		END
                FROM CHAT_MESSAGE cm
               WHERE cm.MESSAGE_ID = (SELECT MAX(MESSAGE_ID)
                                         FROM CHAT_MESSAGE

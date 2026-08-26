@@ -26,5 +26,4 @@ file:
     server: /upload
 
 app:
-  frontend-url: http://localhost:3000 # TODO: 실제 배포 시 chat-app 주소로 교체 (로컬 전용 프로젝트라 현재 미사용)
-  mobile-redirect-scheme: chatapp://oauth-callback
+  frontend-url: http://localhost:3000

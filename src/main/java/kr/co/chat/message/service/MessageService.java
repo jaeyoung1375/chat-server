@@ -66,7 +66,6 @@ public class MessageService {
                 .content(saved.getContent())
                 .fileId(saved.getFileId())
                 .sentAt(saved.getSentAt())
-                .realFilePath(fileService.getUploadPath(saved.getFileId()))
                 .build();
     }
 }

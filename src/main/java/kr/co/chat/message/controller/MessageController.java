@@ -33,7 +33,7 @@ public class MessageController {
         return ApiResponse.ok(messageService.getMessages(userId, roomId, beforeMessageId, size));
     }
 
-    @Operation(summary = "메시지 전송", description = "WebSocket 실시간 브로드캐스트는 아직 없다 — REST로 저장만 수행한다.")
+    @Operation(summary = "메시지 전송", description = "REST로 메시지를 저장한다. 실시간 브로드캐스트가 필요하면 STOMP(/app/rooms/{roomId}/messages)를 사용한다.")
     @PostMapping
     public ApiResponse<MessageResponseDto> sendMessage(
             @PathVariable Long roomId,
