@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -118,6 +119,10 @@ public class AuthService {
 
     public User findUser(Long userId){
         return authMapper.findUser(userId);
+    }
+
+    public List<User> findAllUsers(){
+        return authMapper.findAllUsers();
     }
 
     public void logout(Long userId){

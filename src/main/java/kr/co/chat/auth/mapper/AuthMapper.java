@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Mapper
 public interface AuthMapper {
@@ -28,6 +29,11 @@ public interface AuthMapper {
      * email로 회원 조회 (ACTIVE 상태만) — 소셜 최초 연동 시 기존 이메일 가입 여부 확인용
      */
     User findByEmail(String email);
+
+    /**
+     * 전체 회원 조회 (ACTIVE 상태만)
+     */
+    List<User> findAllUsers();
 
     /**
      * 신규 회원 등록. insert 후 USERS_SEQ로 채번된 값이 dto.userId에 채워짐

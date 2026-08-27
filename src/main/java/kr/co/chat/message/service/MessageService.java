@@ -5,6 +5,7 @@ import kr.co.chat.common.util.DateUtil;
 import kr.co.chat.message.dto.MessageDto;
 import kr.co.chat.message.dto.MessageResponseDto;
 import kr.co.chat.message.dto.MessageSendRequestDto;
+import kr.co.chat.message.enums.MessageType;
 import kr.co.chat.message.mapper.MessageMapper;
 import kr.co.chat.room.service.RoomService;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,7 @@ public class MessageService {
     public List<MessageResponseDto> getMessages(Long userId, Long roomId, Long beforeMessageId, int size) {
         roomService.validateMembership(roomId, userId);
 
-        List<MessageResponseDto> response = messageMapper.findMessages(roomId, beforeMessageId, size);
+        List<MessageResponseDto> response = messageMapper.findMessages(roomId, userId, beforeMessageId, size);
 
         response.forEach(message -> {
             if(message.getFileId() != null){
@@ -65,6 +66,31 @@ public class MessageService {
                 .messageType(saved.getMessageType())
                 .content(saved.getContent())
                 .fileId(saved.getFileId())
+                .sentAt(saved.getSentAt())
+                .build();
+    }
+
+    @Transactional
+    public MessageResponseDto sendSystemMessage(Long roomId, String content) {
+
+        MessageDto message = MessageDto.builder()
+                .roomId(roomId)
+                .messageType(MessageType.SYSTEM.name())
+                .content(content)
+                .sentAt(DateUtil.now())
+                .build();
+
+        messageMapper.insertMessage(message);
+        roomService.touchLastMessageAt(roomId);
+
+        MessageDto saved = messageMapper.findById(message.getMessageId());
+
+        return MessageResponseDto.builder()
+                .messageId(saved.getMessageId())
+                .roomId(saved.getRoomId())
+                .senderId(saved.getSenderId())
+                .messageType(saved.getMessageType())
+                .content(saved.getContent())
                 .sentAt(saved.getSentAt())
                 .build();
     }

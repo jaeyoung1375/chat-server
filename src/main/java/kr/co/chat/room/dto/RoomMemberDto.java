@@ -24,4 +24,6 @@ public class RoomMemberDto {
 
     @Schema(description = "입장일시")
     private LocalDateTime joinedAt;
+
+    private String leftAt;
 }

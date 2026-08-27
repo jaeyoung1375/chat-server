@@ -43,6 +43,11 @@ public interface RoomMapper {
     List<RoomMemberDto> findMembers(@Param("roomId") Long roomId);
 
     /**
+     *  userId가 roomId에 접속했던 기록이 있는지 확인
+     */
+    RoomMemberDto findMember(@Param("roomId") Long roomId, @Param("userId") Long userId);
+
+    /**
      * userId가 roomId의 활성 참여자인지 (0/1)
      */
     int countActiveMember(@Param("roomId") Long roomId, @Param("userId") Long userId);
@@ -51,6 +56,11 @@ public interface RoomMapper {
      * 채팅방 나가기 (LEFT_AT 갱신, 행 삭제하지 않음)
      */
     void updateLeftAt(@Param("roomId") Long roomId, @Param("userId") Long userId, @Param("leftAt") LocalDateTime leftAt);
+
+    /**
+     * 재입장: LEFT_AT을 NULL로 되돌리고 JOINED_AT을 현재 시각으로 갱신 (재입장 이후 메시지만 노출하기 위함)
+     */
+    void reactivateMember(@Param("roomId") Long roomId, @Param("userId") Long userId, @Param("joinedAt") LocalDateTime joinedAt);
 
     /**
      * 읽음 커서 갱신 (기존 값보다 작으면 무시)

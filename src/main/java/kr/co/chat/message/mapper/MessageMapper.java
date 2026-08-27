@@ -22,8 +22,10 @@ public interface MessageMapper {
 
     /**
      * 방의 메시지를 최신순으로 조회 (beforeMessageId가 있으면 그보다 작은 것만 — 커서 페이지네이션)
+     * userId의 JOINED_AT 이후 메시지만 반환 (재입장 전 히스토리는 노출하지 않음)
      */
     List<MessageResponseDto> findMessages(@Param("roomId") Long roomId,
+                                           @Param("userId") Long userId,
                                            @Param("beforeMessageId") Long beforeMessageId,
                                            @Param("size") int size);
 }

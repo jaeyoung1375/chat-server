@@ -17,6 +17,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -75,5 +76,15 @@ public class AuthController {
         }
 
         return ApiResponse.ok(UserProfileDto.from(user));
+    }
+
+    @GetMapping("/users")
+    public ApiResponse<List<UserProfileDto>> getUsers(){
+        List<UserProfileDto> users = authService.findAllUsers()
+                .stream()
+                .map(UserProfileDto::from)
+                .toList();
+
+        return ApiResponse.ok(users);
     }
 }
