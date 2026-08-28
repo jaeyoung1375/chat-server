@@ -86,14 +86,16 @@
             			 WHEN cm.CONTENT IS NOT NULL THEN cm.CONTENT
             		END
                FROM CHAT_MESSAGE cm
-              WHERE cm.MESSAGE_ID = (SELECT MAX(MESSAGE_ID)
-                                        FROM CHAT_MESSAGE
-                                       WHERE ROOM_ID = r.ROOM_ID
-                                         AND DELETED_YN = 'N'))                     AS lastMessageContent,
+              WHERE cm.MESSAGE_ID = (SELECT MAX(cm2.MESSAGE_ID)
+                                        FROM CHAT_MESSAGE cm2
+                                       WHERE cm2.ROOM_ID = r.ROOM_ID
+                                         AND cm2.DELETED_YN = 'N'
+                                         AND cm2.SENT_AT >= rm.JOINED_AT))          AS lastMessageContent,
             (SELECT COUNT(*)
                FROM CHAT_MESSAGE cm
               WHERE cm.ROOM_ID = r.ROOM_ID
                 AND cm.DELETED_YN = 'N'
+                AND cm.SENT_AT >= rm.JOINED_AT
                 AND cm.MESSAGE_ID > NVL(rm.LAST_READ_MESSAGE_ID, 0))                AS unreadCount
         FROM CHAT_ROOM r
         JOIN CHAT_ROOM_MEMBER rm ON rm.ROOM_ID = r.ROOM_ID
@@ -114,6 +116,17 @@
         ORDER BY m.JOINED_AT
     </select>
 
+    <select id="findMember" resultType="RoomMemberDto">
+    SELECT
+          ROOM_MEMBER_ID
+        , ROOM_ID
+        , USER_ID
+        , LEFT_AT
+    FROM CHAT_ROOM_MEMBER
+    WHERE ROOM_ID = #{roomId}
+    AND USER_ID = #{userId}
+    </select>
+
     <select id="countActiveMember" resultType="int">
         SELECT COUNT(*)
         FROM CHAT_ROOM_MEMBER
@@ -128,6 +141,14 @@
         WHERE ROOM_ID = #{roomId}
           AND USER_ID = #{userId}
           AND LEFT_AT IS NULL
+    </update>
+
+    <update id="reactivateMember">
+        UPDATE CHAT_ROOM_MEMBER
+        SET LEFT_AT = NULL,
+            JOINED_AT = #{joinedAt}
+        WHERE ROOM_ID = #{roomId}
+        AND USER_ID = #{userId}
     </update>
 
     <update id="updateLastReadMessageId">

@@ -55,6 +55,26 @@
         AND STATUS = 'ACTIVE'
     </select>
 
+    <!-- 전체 회원 조회 (ACTIVE 상태만) -->
+    <select id="findAllUsers" resultType="User">
+        SELECT
+            USER_ID             /* 회원아이디 */
+            , EMAIL             /* 이메일 */
+            , STATUS            /* 계정상태 */
+            , NAME              /* 이름 */
+            , PHONE             /* 휴대폰번호 */
+            , "ROLE"            /* 권한 */
+            , REG_DT            /* 등록일시 */
+            , MOD_DT            /* 수정일시 */
+            , PROFILE_FILE_ID   /* 프로필 파일아이디 */
+            , LAST_LOGIN_DT     /* 마지막 로그인일시 */
+            , GENDER            /* 성별 */
+            , BIRTH             /* 생년월일 */
+            , NICKNAME          /* 닉네임 */
+        FROM USERS
+        WHERE STATUS = 'ACTIVE'
+    </select>
+
     <!-- 신규 회원 등록 (USERS_SEQ로 채번된 userId가 selectKey를 통해 dto에 채워짐) -->
     <insert id="insertUser" parameterType="UserInsertDto">
         <selectKey keyProperty="userId" resultType="long" order="BEFORE">

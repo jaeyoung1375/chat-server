@@ -47,10 +47,12 @@ public class RoomController {
 
         RoomResponseDto roomResponseDto = roomService.createOrGetDirectRoom(userId, request.getTargetUserId());
 
-        User user = authService.findUser(request.getTargetUserId());
-        String nickname = user.getNickname() != null ? user.getNickname() : user.getName();
-        MessageResponseDto systemMessage = messageService.sendSystemMessage(roomResponseDto.getRoomId(), nickname + "님이 입장했습니다.");
-        messagingTemplate.convertAndSend("/topic/room/" + roomResponseDto.getRoomId(), systemMessage);
+        for (Long reactivateUserId : roomResponseDto.getReactivatedUserIds()){
+            User user = authService.findUser(reactivateUserId);
+            String nickname = user.getNickname() != null ? user.getNickname() : user.getName();
+            MessageResponseDto systemMessage = messageService.sendSystemMessage(roomResponseDto.getRoomId(), nickname + "님이 입장했습니다.");
+            messagingTemplate.convertAndSend("/topic/room/" + roomResponseDto.getRoomId(), systemMessage);
+        }
 
 
         return ApiResponse.ok(roomResponseDto);

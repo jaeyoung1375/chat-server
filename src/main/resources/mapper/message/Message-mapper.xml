@@ -55,8 +55,10 @@
             cm.SENT_AT                  AS sentAt
         FROM CHAT_MESSAGE cm
         LEFT JOIN USERS u ON u.USER_ID = cm.SENDER_ID
+        JOIN CHAT_ROOM_MEMBER rm ON rm.ROOM_ID = cm.ROOM_ID AND rm.USER_ID = #{userId}
         WHERE cm.ROOM_ID = #{roomId}
           AND cm.DELETED_YN = 'N'
+          AND cm.SENT_AT >= rm.JOINED_AT
           <if test="beforeMessageId != null">
           AND cm.MESSAGE_ID &lt; #{beforeMessageId}
           </if>

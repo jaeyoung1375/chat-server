@@ -59,6 +59,12 @@ public class MessageService {
 
         MessageDto saved = messageMapper.findById(message.getMessageId());
 
+        String realFilePath = "";
+
+        if (saved.getFileId() != null) {
+            realFilePath = fileService.getUploadPath(saved.getFileId());
+        }
+
         return MessageResponseDto.builder()
                 .messageId(saved.getMessageId())
                 .roomId(saved.getRoomId())
@@ -67,6 +73,7 @@ public class MessageService {
                 .content(saved.getContent())
                 .fileId(saved.getFileId())
                 .sentAt(saved.getSentAt())
+                .realFilePath(realFilePath)
                 .build();
     }
 
